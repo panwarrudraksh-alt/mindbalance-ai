@@ -1,16 +1,8 @@
 import streamlit as st
-import os
-from dotenv import load_dotenv
 from groq import Groq
 
-# Load API
-load_dotenv()
-api_key = os.getenv("GROQ_API_KEY")
-
-if not api_key:
-    st.error("GROQ_API_KEY not found in .env file")
-    st.stop()
-
+# 🔑 Load API key from Streamlit Secrets
+api_key = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=api_key)
 
 st.set_page_config(page_title="MindBalance AI", layout="wide")
@@ -28,7 +20,7 @@ video#earth-bg {
     min-height: 100%;
     object-fit: cover;
     z-index: -2;
-    filter: brightness(0.5) blur(2px);
+    filter: brightness(0.45) blur(2px);
 }
 
 /* 🌫 Glass overlay */
@@ -99,7 +91,7 @@ video#earth-bg {
 h1 {
     text-align: center;
     font-weight: 800;
-    font-size: 2.8rem;
+    font-size: 2.6rem;
     color: white;
     margin-bottom: 25px;
 }
@@ -142,18 +134,18 @@ st.title("🧠 MindBalance AI")
 
 st.markdown('<div class="chat-container">', unsafe_allow_html=True)
 
-# Chat history
+# 🧠 Chat memory
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display chat
+# 💬 Display chat
 for msg in st.session_state.messages:
     if msg["role"] == "user":
         st.markdown(f'<div class="user-bubble">{msg["content"]}</div>', unsafe_allow_html=True)
     else:
         st.markdown(f'<div class="ai-bubble">{msg["content"]}</div>', unsafe_allow_html=True)
 
-# Chat input
+# ✅ Chat input (no loop)
 user_input = st.chat_input("How are you feeling today?")
 
 if user_input:
