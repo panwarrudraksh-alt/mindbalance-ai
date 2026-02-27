@@ -1,15 +1,22 @@
 import streamlit as st
 from groq import Groq
 
-# 🔑 Load API key
+# 🔑 API
 api_key = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=api_key)
 
 st.set_page_config(page_title="MindBalance AI", layout="wide")
 
-# ---------- 🌌 NEON BACKGROUND ----------
+# ---------- 🌌 CSS ----------
 st.markdown("""
 <style>
+
+/* ❌ REMOVE STREAMLIT HEADER GREY BAR */
+header {visibility: hidden;}
+[data-testid="stToolbar"] {display: none;}
+[data-testid="stDecoration"] {display: none;}
+[data-testid="stStatusWidget"] {display: none;}
+.block-container {padding-top: 0rem !important;}
 
 /* 🌈 Animated gradient background */
 body {
@@ -24,7 +31,7 @@ body {
     100% {background-position: 0% 50%;}
 }
 
-/* 💎 Glass card (ONLY this — not global container) */
+/* 💎 Glass card */
 .glass {
     background: rgba(255, 255, 255, 0.10);
     padding: 35px;
@@ -33,11 +40,11 @@ body {
     box-shadow: 0 0 60px rgba(0,0,0,0.6);
     max-width: 850px;
     margin: auto;
-    margin-top: 60px;
+    margin-top: 20px;
     border: 1px solid rgba(255,255,255,0.2);
 }
 
-/* ✨ Neon floating title */
+/* ✨ Neon title */
 .title {
     font-size: 3rem;
     font-weight: 800;
@@ -81,7 +88,7 @@ body {
     box-shadow: 0 0 16px rgba(255,120,180,0.7);
 }
 
-/* 🧠 Chat input styling */
+/* 🧠 Chat input */
 .stChatInput input {
     background: rgba(255,255,255,0.18) !important;
     color: white !important;
@@ -94,22 +101,21 @@ body {
 </style>
 """, unsafe_allow_html=True)
 
-# ---------- 🧠 GLASS CARD START ----------
+# ---------- 🧠 UI ----------
 st.markdown('<div class="glass">', unsafe_allow_html=True)
-
 st.markdown('<div class="title">🧠 MindBalance AI</div>', unsafe_allow_html=True)
 st.markdown("### 💬 Your AI-powered mental wellness companion 🌱✨")
 
-# 🧹 Reset button
+# 🧹 Reset
 if st.button("🧹 Reset Chat"):
     st.session_state.messages = []
     st.rerun()
 
-# 🧠 Chat memory init
+# 🧠 Memory
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 💬 Display chat safely
+# 💬 Display messages
 for msg in st.session_state.messages:
     content = msg.get("content", "").strip()
     if not content:
@@ -120,12 +126,11 @@ for msg in st.session_state.messages:
     else:
         st.markdown(f'<div class="ai-bubble">🤖 {content}</div>', unsafe_allow_html=True)
 
-# 💭 Chat input
+# 💭 Input
 user_input = st.chat_input("How are you feeling today? 💭")
 
-# ---------- 🤖 CHAT LOGIC ----------
+# ---------- 🤖 CHAT ----------
 if user_input and user_input.strip():
-    # Save user message
     st.session_state.messages.append({"role": "user", "content": user_input.strip()})
 
     with st.spinner("🤖 MindBalance is thinking... 🧠💫"):
@@ -145,5 +150,4 @@ if user_input and user_input.strip():
         except Exception as e:
             st.error(f"⚠️ Groq Error: {e}")
 
-# ---------- 🧠 GLASS CARD END ----------
 st.markdown('</div>', unsafe_allow_html=True)
