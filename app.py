@@ -1,30 +1,16 @@
 import streamlit as st
 from groq import Groq
 
-# 🔧 PAGE CONFIG (CENTERED = NO GREY BAR)
+# 🔧 PAGE CONFIG
 st.set_page_config(page_title="MindBalance AI", layout="centered")
 
-# 🔑 LOAD GROQ KEY
+# 🔑 GROQ
 api_key = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=api_key)
 
-# 🎨 GLOBAL CSS (GREY BAR KILL + NEON GLASS UI)
+# 🎨 CLEAN CSS (NO LAYOUT HACKS)
 st.markdown("""
 <style>
-
-/* 🚫 REMOVE STREAMLIT TOP SPACE + GREY BAR */
-.block-container {
-    padding-top: 0rem !important;
-    margin-top: 0rem !important;
-}
-
-div[data-testid="stVerticalBlock"] > div:first-child:empty {
-    display: none !important;
-}
-
-div[data-testid="stVerticalBlock"] > div:has(div.stChatInput) {
-    margin-top: 0rem !important;
-}
 
 /* 🌈 Animated gradient background */
 body {
@@ -39,20 +25,7 @@ body {
     100% {background-position: 0% 50%;}
 }
 
-/* 💎 Glass container */
-.glass {
-    background: rgba(255, 255, 255, 0.10);
-    padding: 35px;
-    border-radius: 28px;
-    backdrop-filter: blur(25px);
-    box-shadow: 0 0 60px rgba(0,0,0,0.6);
-    max-width: 850px;
-    margin: auto;
-    margin-top: 40px;
-    border: 1px solid rgba(255,255,255,0.2);
-}
-
-/* ✨ Neon floating title */
+/* ✨ Neon title */
 .title {
     font-size: 3rem;
     font-weight: 800;
@@ -71,6 +44,18 @@ body {
     0% { transform: translateY(0px); }
     50% { transform: translateY(-10px); }
     100% { transform: translateY(0px); }
+}
+
+/* 💎 Glass chat area */
+.glass-chat {
+    background: rgba(255, 255, 255, 0.10);
+    padding: 30px;
+    border-radius: 25px;
+    backdrop-filter: blur(25px);
+    box-shadow: 0 0 60px rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.2);
+    max-width: 850px;
+    margin: auto;
 }
 
 /* 💬 Chat bubbles */
@@ -96,7 +81,7 @@ body {
     box-shadow: 0 0 16px rgba(255,120,180,0.7);
 }
 
-/* 🧠 Chat input styling */
+/* 🧠 Chat input style */
 .stChatInput input {
     background: rgba(255,255,255,0.18) !important;
     color: white !important;
@@ -106,31 +91,12 @@ body {
     font-size: 16px !important;
 }
 
-/* 🧹 Reset button */
-.stButton button {
-    background: linear-gradient(90deg, #00ffe1, #ff00c8);
-    color: white;
-    border-radius: 14px;
-    padding: 10px 22px;
-    border: none;
-    font-weight: 600;
-    transition: 0.3s;
-}
-
-.stButton button:hover {
-    transform: scale(1.08);
-    box-shadow: 0 0 20px #00ffe1;
-}
-
 </style>
 """, unsafe_allow_html=True)
 
-# 🧠 SESSION MEMORY
+# 🧠 MEMORY
 if "messages" not in st.session_state:
     st.session_state.messages = []
-
-# 💎 GLASS WRAPPER START
-st.markdown('<div class="glass">', unsafe_allow_html=True)
 
 # 🧠 TITLE
 st.markdown('<div class="title">🧠 MindBalance AI</div>', unsafe_allow_html=True)
@@ -141,17 +107,19 @@ if st.button("🧹 Reset Chat"):
     st.session_state.messages = []
     st.rerun()
 
-# 💬 DISPLAY CHAT
-for msg in st.session_state.messages:
-    if not msg["content"].strip():
-        continue
+# 💎 GLASS CHAT AREA
+st.markdown('<div class="glass-chat">', unsafe_allow_html=True)
 
+# 💬 SHOW MESSAGES
+for msg in st.session_state.messages:
     if msg["role"] == "user":
         st.markdown(f'<div class="user-bubble">🧑‍💬 {msg["content"]}</div>', unsafe_allow_html=True)
     else:
         st.markdown(f'<div class="ai-bubble">🤖 {msg["content"]}</div>', unsafe_allow_html=True)
 
-# 💭 CHAT INPUT (INSIDE GLASS = NO GREY BAR)
+st.markdown('</div>', unsafe_allow_html=True)
+
+# 💭 INPUT (LEAVE IT OUTSIDE GLASS → NO GREY BAR)
 user_input = st.chat_input("How are you feeling today? 💭")
 
 if user_input:
@@ -175,6 +143,3 @@ if user_input:
 
         except Exception as e:
             st.error(f"⚠️ Groq Error: {e}")
-
-# 💎 GLASS WRAPPER END
-st.markdown('</div>', unsafe_allow_html=True)
