@@ -1,152 +1,149 @@
 import streamlit as st
-import base64
-import os
-from openai import OpenAI
+from groq import Groq
 
-st.set_page_config(page_title="MindBalance AI", layout="centered")
+# 🔑 Load API key
+api_key = st.secrets["GROQ_API_KEY"]
+client = Groq(api_key=api_key)
 
-# ---------- LOAD API ----------
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+st.set_page_config(page_title="MindBalance AI", layout="wide")
 
-# ---------- SAFE VIDEO BACKGROUND ----------
-def get_base64_video(video_file):
-    if os.path.exists(video_file):
-        with open(video_file, "rb") as f:
-            data = f.read()
-        return base64.b64encode(data).decode()
-    return None
-
-video_base64 = get_base64_video("earth.mp4")
-
-if video_base64:
-    st.markdown(f"""
-    <style>
-    .stApp {{ background: transparent; }}
-    video {{
-        position: fixed;
-        right: 0;
-        bottom: 0;
-        min-width: 100%;
-        min-height: 100%;
-        z-index: -10;
-        object-fit: cover;
-        filter: brightness(0.45) saturate(1.2);
-    }}
-    </style>
-
-    <video autoplay muted loop>
-        <source src="data:video/mp4;base64,{video_base64}" type="video/mp4">
-    </video>
-    """, unsafe_allow_html=True)
-
-# ---------- CSS ----------
+# ---------- 🌌 NEON BACKGROUND ----------
 st.markdown("""
 <style>
 
-/* REMOVE ALL DEFAULT BACKGROUNDS */
-.main, .block-container, header, footer {
-    background: transparent !important;
+/* 🌈 Animated gradient background */
+body {
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    background-size: 300% 300%;
+    animation: gradientMove 16s ease infinite;
 }
 
-/* KILL GRAY BAR FOREVER */
-[data-testid="stDecoration"], .st-emotion-cache-18ni7ap {
-    display: none !important;
+@keyframes gradientMove {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
 }
 
-/* GLASS CARD */
-.glass-card {
-    background: rgba(255, 255, 255, 0.08);
+/* 💎 Glass card (ONLY this — not global container) */
+.glass {
+    background: rgba(255, 255, 255, 0.10);
     padding: 35px;
-    border-radius: 22px;
-    backdrop-filter: blur(18px);
-    border: 1px solid rgba(255,255,255,0.18);
-    box-shadow: 0 0 35px rgba(0,255,255,0.25);
-    margin-top: 40px;
+    border-radius: 28px;
+    backdrop-filter: blur(25px);
+    box-shadow: 0 0 60px rgba(0,0,0,0.6);
+    max-width: 850px;
+    margin: auto;
+    margin-top: 60px;
+    border: 1px solid rgba(255,255,255,0.2);
 }
 
-/* TITLE */
+/* ✨ Neon floating title */
 .title {
-    text-align: center;
-    font-size: 46px;
+    font-size: 3rem;
     font-weight: 800;
-    background: linear-gradient(90deg, #00f5ff, #ff00e6, #00ff88);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-/* CHAT BUBBLES */
-.user-bubble {
-    background: linear-gradient(90deg, #00f5ff, #0099ff);
-    padding: 12px;
-    border-radius: 14px;
-    margin: 8px 0;
-    color: white;
-    text-align: right;
-}
-
-.bot-bubble {
-    background: rgba(255,255,255,0.12);
-    padding: 12px;
-    border-radius: 14px;
-    margin: 8px 0;
+    text-align: center;
     color: #ffffff;
-    text-align: left;
+    text-shadow:
+        0 0 6px #00ffe1,
+        0 0 14px #00ffe1,
+        0 0 22px #ff00c8,
+        0 0 40px #ff00c8;
+    margin-bottom: 10px;
+    animation: floatText 4s ease-in-out infinite;
 }
 
-/* BUTTON */
-.stButton > button {
-    width: 100%;
-    border-radius: 14px;
-    background: linear-gradient(90deg, #00f5ff, #ff00e6);
-    color: white;
-    font-weight: bold;
-    border: none;
-    padding: 12px;
+@keyframes floatText {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
 }
 
-textarea {
-    background: rgba(0,0,0,0.35) !important;
+/* 💬 Chat bubbles */
+.user-bubble {
+    background: linear-gradient(135deg, #00f5a0, #00d9f5);
+    padding: 14px 20px;
+    border-radius: 22px 22px 5px 22px;
+    color: #003333;
+    margin: 12px 0;
+    width: fit-content;
+    font-weight: 500;
+    box-shadow: 0 0 14px rgba(0,255,200,0.7);
+}
+
+.ai-bubble {
+    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+    padding: 14px 20px;
+    border-radius: 22px 22px 22px 5px;
+    color: #4a0033;
+    margin: 12px 0;
+    width: fit-content;
+    font-weight: 500;
+    box-shadow: 0 0 16px rgba(255,120,180,0.7);
+}
+
+/* 🧠 Chat input styling */
+.stChatInput input {
+    background: rgba(255,255,255,0.18) !important;
     color: white !important;
-    border-radius: 12px !important;
+    border-radius: 14px !important;
+    border: none !important;
+    padding: 14px !important;
+    font-size: 16px !important;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# ---------- SESSION MEMORY ----------
+# ---------- 🧠 GLASS CARD START ----------
+st.markdown('<div class="glass">', unsafe_allow_html=True)
+
+st.markdown('<div class="title">🧠 MindBalance AI</div>', unsafe_allow_html=True)
+st.markdown("### 💬 Your AI-powered mental wellness companion 🌱✨")
+
+# 🧹 Reset button
+if st.button("🧹 Reset Chat"):
+    st.session_state.messages = []
+    st.rerun()
+
+# 🧠 Chat memory init
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# ---------- UI ----------
-st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-st.markdown('<div class="title">🧠 MindBalance AI</div>', unsafe_allow_html=True)
-
-# DISPLAY CHAT HISTORY
+# 💬 Display chat safely
 for msg in st.session_state.messages:
+    content = msg.get("content", "").strip()
+    if not content:
+        continue
+
     if msg["role"] == "user":
-        st.markdown(f'<div class="user-bubble">🧑 {msg["content"]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="user-bubble">🧑‍💬 {content}</div>', unsafe_allow_html=True)
     else:
-        st.markdown(f'<div class="bot-bubble">🤖 {msg["content"]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="ai-bubble">🤖 {content}</div>', unsafe_allow_html=True)
 
-# INPUT
-user_input = st.text_area("💭 Share your thoughts...", height=100)
+# 💭 Chat input
+user_input = st.chat_input("How are you feeling today? 💭")
 
-if st.button("✨ Send"):
-    if user_input.strip() != "":
-        # SAVE USER MESSAGE
-        st.session_state.messages.append({"role": "user", "content": user_input})
+# ---------- 🤖 CHAT LOGIC ----------
+if user_input and user_input.strip():
+    # Save user message
+    st.session_state.messages.append({"role": "user", "content": user_input.strip()})
 
-        # GET AI RESPONSE
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=st.session_state.messages
-        )
+    with st.spinner("🤖 MindBalance is thinking... 🧠💫"):
+        try:
+            response = client.chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=st.session_state.messages
+            )
 
-        bot_reply = response.choices[0].message.content
+            ai_reply = response.choices[0].message.content.strip()
 
-        # SAVE BOT MESSAGE
-        st.session_state.messages.append({"role": "assistant", "content": bot_reply})
+            if ai_reply:
+                st.session_state.messages.append({"role": "assistant", "content": ai_reply})
 
-        st.rerun()
+            st.rerun()
 
-st.markdown("</div>", unsafe_allow_html=True)
+        except Exception as e:
+            st.error(f"⚠️ Groq Error: {e}")
+
+# ---------- 🧠 GLASS CARD END ----------
+st.markdown('</div>', unsafe_allow_html=True)
