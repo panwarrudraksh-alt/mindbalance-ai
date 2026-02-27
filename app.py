@@ -24,8 +24,8 @@ body {
     100% {background-position: 0% 50%;}
 }
 
-/* 💎 Glass container */
-.glass {
+/* 💎 Apply glass effect to main container */
+section.main > div {
     background: rgba(255, 255, 255, 0.10);
     padding: 40px;
     border-radius: 28px;
@@ -100,8 +100,7 @@ body {
 </style>
 """, unsafe_allow_html=True)
 
-# ---------- 🧠 UI START ----------
-st.markdown('<div class="glass">', unsafe_allow_html=True)
+# ---------- 🧠 UI ----------
 st.markdown('<div class="title">🧠 MindBalance AI</div>', unsafe_allow_html=True)
 st.markdown("### 💬 Your AI-powered mental wellness companion 🌱✨")
 
@@ -114,7 +113,7 @@ if st.button("🧹 Reset Chat"):
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 💬 Display chat (skip empty)
+# 💬 Display chat
 for msg in st.session_state.messages:
     if not msg["content"].strip():
         continue
@@ -146,5 +145,3 @@ if user_input:
 
         except Exception as e:
             st.error(f"⚠️ Groq Error: {e}")
-
-st.markdown('</div>', unsafe_allow_html=True)
