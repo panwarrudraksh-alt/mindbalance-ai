@@ -1,139 +1,168 @@
 import streamlit as st
-import base64
+from groq import Groq
 
-# ---------- PAGE CONFIG ----------
+# 🔑 Load API key from Streamlit Secrets
+api_key = st.secrets["GROQ_API_KEY"]
+client = Groq(api_key=api_key)
+
 st.set_page_config(page_title="MindBalance AI", layout="wide")
 
-# ---------- LOAD VIDEO ----------
-def get_base64_video(video_file):
-    with open(video_file, "rb") as f:
-        data = f.read()
-    return base64.b64encode(data).decode()
+# 🌍 GLASS + EARTH BACKGROUND + GRAVITY PARTICLES
+st.markdown("""
+<style>
 
-video_base64 = get_base64_video("earth.mp4")
+/* 🌍 Earth video background */
+video#earth-bg {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    min-width: 100%;
+    min-height: 100%;
+    object-fit: cover;
+    z-index: -2;
+    filter: brightness(0.45) blur(2px);
+}
 
-# ---------- GLOBAL STYLES ----------
-st.markdown(
-    f"""
-    <style>
+/* 🌫 Glass overlay */
+.glass-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 15, 25, 0.45);
+    backdrop-filter: blur(6px);
+    z-index: -1;
+}
 
-    /* Background video */
-    .video-bg {{
-        position: fixed;
-        right: 0;
-        bottom: 0;
-        min-width: 100%;
-        min-height: 100%;
-        z-index: -1;
-        opacity: 0.6;
-        filter: blur(2px);
-    }}
+/* 🪐 Gravity particles */
+.particle {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 50%;
+    animation: gravity 12s infinite linear;
+}
 
-    /* Glass container */
-    .glass {{
-        background: rgba(255, 255, 255, 0.12);
-        padding: 40px;
-        border-radius: 25px;
-        backdrop-filter: blur(20px);
-        box-shadow: 0 0 60px rgba(0,0,0,0.6);
-        max-width: 750px;
-        margin: auto;
-        margin-top: 80px;
-    }}
+@keyframes gravity {
+    0% { transform: translateY(-10vh) translateX(0); opacity: 0; }
+    10% { opacity: 0.8; }
+    100% { transform: translateY(110vh) translateX(50px); opacity: 0; }
+}
 
-    /* Neon title */
-    .title {{
-        font-size: 3.2rem;
-        font-weight: 800;
-        text-align: center;
-        color: #ffffff;
-        text-shadow:
-            0 0 5px #00ffe1,
-            0 0 10px #00ffe1,
-            0 0 20px #ff00c8,
-            0 0 40px #ff00c8;
-        margin-bottom: 30px;
-        animation: floatText 4s ease-in-out infinite;
-    }}
+/* 💎 Glass chat container */
+.chat-container {
+    max-width: 850px;
+    margin: auto;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(25px);
+    padding: 35px;
+    border-radius: 30px;
+    box-shadow: 0 0 40px rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.2);
+}
 
-    @keyframes floatText {{
-        0% {{ transform: translateY(0px); }}
-        50% {{ transform: translateY(-10px); }}
-        100% {{ transform: translateY(0px); }}
-    }}
+/* 💬 User bubble */
+.user-bubble {
+    background: linear-gradient(135deg, #00f5a0, #00d9f5);
+    padding: 14px 20px;
+    border-radius: 25px 25px 5px 25px;
+    color: #003333;
+    margin: 12px 0;
+    width: fit-content;
+    font-weight: 500;
+    box-shadow: 0 0 12px rgba(0,255,200,0.6);
+}
 
-    /* Subtitle */
-    .subtitle {{
-        text-align: center;
-        color: #e0e0e0;
-        margin-bottom: 25px;
-        font-size: 1.1rem;
-    }}
+/* 🤖 AI bubble */
+.ai-bubble {
+    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+    padding: 14px 20px;
+    border-radius: 25px 25px 25px 5px;
+    color: #4a0033;
+    margin: 12px 0;
+    width: fit-content;
+    font-weight: 500;
+    box-shadow: 0 0 14px rgba(255,100,150,0.6);
+}
 
-    /* Input box */
-    .stTextInput>div>div>input {{
-        background: rgba(255,255,255,0.18);
-        color: white;
-        border-radius: 14px;
-        border: none;
-        padding: 14px;
-        font-size: 16px;
-    }}
+/* 🧠 Title */
+h1 {
+    text-align: center;
+    font-weight: 800;
+    font-size: 2.6rem;
+    color: white;
+    margin-bottom: 25px;
+}
 
-    /* Button */
-    .stButton button {{
-        background: linear-gradient(90deg, #00ffe1, #ff00c8);
-        color: white;
-        border-radius: 14px;
-        padding: 12px 30px;
-        border: none;
-        font-size: 17px;
-        font-weight: 600;
-        transition: 0.3s;
-        display: block;
-        margin: auto;
-    }}
+/* ✨ Input bar */
+.stChatInput input {
+    border-radius: 25px !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+    padding: 14px !important;
+    background: rgba(255,255,255,0.15) !important;
+    color: white !important;
+}
 
-    .stButton button:hover {{
-        transform: scale(1.08);
-        box-shadow: 0 0 25px #00ffe1;
-    }}
+/* 📏 Better spacing */
+.block-container {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+}
 
-    /* Result text */
-    .result {{
-        margin-top: 25px;
-        font-size: 1.2rem;
-        text-align: center;
-        color: #ffffff;
-        text-shadow: 0 0 10px #00ffe1;
-    }}
+</style>
 
-    </style>
+<!-- 🌍 Earth background video -->
+<video autoplay muted loop id="earth-bg">
+  <source src="https://cdn.coverr.co/videos/coverr-earth-rotation-5176/1080p.mp4" type="video/mp4">
+</video>
 
-    <video autoplay loop muted class="video-bg">
-        <source src="data:video/mp4;base64,{video_base64}" type="video/mp4">
-    </video>
-    """,
-    unsafe_allow_html=True
-)
+<div class="glass-overlay"></div>
 
-# ---------- GLASS UI ----------
-st.markdown('<div class="glass">', unsafe_allow_html=True)
+<!-- 🪐 Gravity particles -->
+<div class="particle" style="left:10%; animation-duration:10s;"></div>
+<div class="particle" style="left:25%; animation-duration:14s;"></div>
+<div class="particle" style="left:40%; animation-duration:12s;"></div>
+<div class="particle" style="left:60%; animation-duration:16s;"></div>
+<div class="particle" style="left:75%; animation-duration:11s;"></div>
+<div class="particle" style="left:90%; animation-duration:15s;"></div>
 
-st.markdown('<div class="title">🧠 MindBalance AI</div>', unsafe_allow_html=True)
-st.markdown(
-    '<div class="subtitle">Your AI-powered mental wellness companion</div>',
-    unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
 
-user_input = st.text_input("How are you feeling today?")
+st.title("🧠 MindBalance AI")
 
-if st.button("Analyze Mood"):
-    if user_input:
-        # Dummy AI response (replace with your API later)
-        response = "✨ You are stronger than you think. Keep going 💙"
-        st.markdown(f'<div class="result">{response}</div>', unsafe_allow_html=True)
+st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+
+# 🧠 Chat memory
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# 💬 Display chat
+for msg in st.session_state.messages:
+    if msg["role"] == "user":
+        st.markdown(f'<div class="user-bubble">{msg["content"]}</div>', unsafe_allow_html=True)
     else:
-        st.warning("Please enter your feelings first.")
+        st.markdown(f'<div class="ai-bubble">{msg["content"]}</div>', unsafe_allow_html=True)
+
+# ✅ Chat input (no loop)
+user_input = st.chat_input("How are you feeling today?")
+
+if user_input:
+    st.session_state.messages.append({"role": "user", "content": user_input})
+
+    try:
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=st.session_state.messages
+        )
+
+        ai_reply = response.choices[0].message.content
+        st.session_state.messages.append({"role": "assistant", "content": ai_reply})
+
+        st.rerun()
+
+    except Exception as e:
+        st.error(f"Groq Error: {e}")
 
 st.markdown('</div>', unsafe_allow_html=True)
