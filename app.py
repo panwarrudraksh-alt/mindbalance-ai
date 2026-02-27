@@ -7,15 +7,15 @@ client = Groq(api_key=api_key)
 
 st.set_page_config(page_title="MindBalance AI", layout="wide")
 
-# ---------- NEON GLASS UI (NO VIDEO) ----------
+# ---------- 🌌 NEON GLASS UI ----------
 st.markdown("""
 <style>
 
-/* 🌌 Animated gradient background */
+/* 🌈 Animated gradient background */
 body {
     background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
     background-size: 300% 300%;
-    animation: gradientMove 15s ease infinite;
+    animation: gradientMove 16s ease infinite;
 }
 
 @keyframes gradientMove {
@@ -31,7 +31,7 @@ body {
     border-radius: 28px;
     backdrop-filter: blur(25px);
     box-shadow: 0 0 60px rgba(0,0,0,0.6);
-    max-width: 820px;
+    max-width: 850px;
     margin: auto;
     margin-top: 60px;
     border: 1px solid rgba(255,255,255,0.2);
@@ -48,7 +48,7 @@ body {
         0 0 14px #00ffe1,
         0 0 22px #ff00c8,
         0 0 40px #ff00c8;
-    margin-bottom: 25px;
+    margin-bottom: 10px;
     animation: floatText 4s ease-in-out infinite;
 }
 
@@ -100,39 +100,51 @@ body {
 </style>
 """, unsafe_allow_html=True)
 
-# ---------- UI START ----------
+# ---------- 🧠 UI START ----------
 st.markdown('<div class="glass">', unsafe_allow_html=True)
 st.markdown('<div class="title">🧠 MindBalance AI</div>', unsafe_allow_html=True)
+st.markdown("### 💬 Your AI-powered mental wellness companion 🌱✨")
+
+# 🧹 Reset button
+if st.button("🧹 Reset Chat"):
+    st.session_state.messages = []
+    st.rerun()
 
 # 🧠 Chat memory
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 💬 Show chat
+# 💬 Display chat (skip empty)
 for msg in st.session_state.messages:
-    if msg["role"] == "user":
-        st.markdown(f'<div class="user-bubble">{msg["content"]}</div>', unsafe_allow_html=True)
-    else:
-        st.markdown(f'<div class="ai-bubble">{msg["content"]}</div>', unsafe_allow_html=True)
+    if not msg["content"].strip():
+        continue
 
-# ✅ Chat input (no loop)
-user_input = st.chat_input("How are you feeling today?")
+    if msg["role"] == "user":
+        st.markdown(f'<div class="user-bubble">🧑‍💬 {msg["content"]}</div>', unsafe_allow_html=True)
+    else:
+        st.markdown(f'<div class="ai-bubble">🤖 {msg["content"]}</div>', unsafe_allow_html=True)
+
+# 💭 Chat input
+user_input = st.chat_input("How are you feeling today? 💭")
 
 if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
 
-    try:
-        response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
-            messages=st.session_state.messages
-        )
+    with st.spinner("🤖 MindBalance is thinking... 🧠💫"):
+        try:
+            response = client.chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=st.session_state.messages
+            )
 
-        ai_reply = response.choices[0].message.content
-        st.session_state.messages.append({"role": "assistant", "content": ai_reply})
+            ai_reply = response.choices[0].message.content.strip()
 
-        st.rerun()
+            if ai_reply:
+                st.session_state.messages.append({"role": "assistant", "content": ai_reply})
 
-    except Exception as e:
-        st.error(f"Groq Error: {e}")
+            st.rerun()
+
+        except Exception as e:
+            st.error(f"⚠️ Groq Error: {e}")
 
 st.markdown('</div>', unsafe_allow_html=True)
